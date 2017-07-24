@@ -20,7 +20,7 @@
 
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vestmark.bitbucket</groupId>
-    <artifactId>automergeconflictdetector</artifactId>
+    <artifactId>mergeconflictdetector</artifactId>
     <version>2.0.2</version>
     <organization>
         <name>Vestmark</name>
