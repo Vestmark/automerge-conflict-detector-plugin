@@ -110,7 +110,7 @@ public class MergeConflictDetectorServlet
     response.setContentType("text/html;charset=UTF-8");
     try {
       soyTemplateRenderer.render(response.getWriter(), 
-                                 "com.vestmark.bitbucket.mergeconflictdetector:mcd.soy", 
+                                 "com.vestmark.bitbucket.automergeconflictdetector:mcd.soy", 
                                  "plugin.mcd.conflictsTab", 
                                  data);
     } catch (SoyException e) {
