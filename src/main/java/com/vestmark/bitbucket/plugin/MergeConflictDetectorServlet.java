@@ -35,6 +35,8 @@ import com.atlassian.bitbucket.repository.RepositoryBranchesRequest;
 import com.atlassian.bitbucket.pull.PullRequestSupplier;
 import com.atlassian.bitbucket.scm.MergeCommandParameters;
 import com.atlassian.bitbucket.scm.MergeException;
+import com.atlassian.bitbucket.ServiceException;
+import com.atlassian.bitbucket.scm.CommandFailedException;
 import com.atlassian.bitbucket.scm.git.command.GitExtendedCommandFactory;
 import com.atlassian.bitbucket.scm.git.command.merge.GitMergeException;
 import com.atlassian.bitbucket.scm.git.command.merge.conflict.GitMergeConflict;
@@ -127,6 +129,7 @@ public class MergeConflictDetectorServlet
   {
     List<String> files = null;
     List<GitMergeConflict> mergeConflicts = null;
+    List<GitMergeConflict> mergeConflictResults = null;
     List<String> message = new LinkedList<String>();
     MergeCommandParameters params = new MergeCommandParameters
         .Builder()
@@ -145,11 +148,21 @@ public class MergeConflictDetectorServlet
     } catch (MergeException e) {
       files = new LinkedList<String>();
       mergeConflicts = new LinkedList<GitMergeConflict>();
-      for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
-        files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
-        message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
-                                      + mergeConflict.getTheirChange());
-        mergeConflicts.add(mergeConflict);
+      // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
+      // The (GitMergeException) cast below causes the plugin to crash because of it.
+      // Adding a CommandFailedException catch block did not work.
+      // Checking the type of the Exception obj prior to the cast using instanceof did not work.
+      // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
+      try {
+        mergeConflictResults = new LinkedList<GitMergeConflict>(((GitMergeException)e.getCause()).getConflicts());
+        for (GitMergeConflict mergeConflict : mergeConflictResults) {
+          files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
+          message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
+                                        + mergeConflict.getTheirChange());
+          mergeConflicts.add(mergeConflict);
+        }
+      } catch (Exception f) {
+        message.add(e.getMessage());
       }
     }
 
