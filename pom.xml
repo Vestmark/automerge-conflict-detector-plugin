@@ -11,7 +11,7 @@
         <name>Vestmark</name>
         <url>http://www.vestmark.com/</url>
     </organization>
-    <name>Merge Conflict Detector</name>
+    <name>AutoMerge Conflict Detector</name>
     <description>
         This is the Merge Conflict Detector plugin for Atlassian Bitbucket Server.
         It exposes potential automerge conflicts.

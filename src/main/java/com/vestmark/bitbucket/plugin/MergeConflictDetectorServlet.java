@@ -35,8 +35,6 @@ import com.atlassian.bitbucket.repository.RepositoryBranchesRequest;
 import com.atlassian.bitbucket.pull.PullRequestSupplier;
 import com.atlassian.bitbucket.scm.MergeCommandParameters;
 import com.atlassian.bitbucket.scm.MergeException;
-import com.atlassian.bitbucket.ServiceException;
-import com.atlassian.bitbucket.scm.CommandFailedException;
 import com.atlassian.bitbucket.scm.git.command.GitExtendedCommandFactory;
 import com.atlassian.bitbucket.scm.git.command.merge.GitMergeException;
 import com.atlassian.bitbucket.scm.git.command.merge.conflict.GitMergeConflict;
