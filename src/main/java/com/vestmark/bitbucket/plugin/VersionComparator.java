@@ -53,7 +53,7 @@ public class VersionComparator<T>
       }
       else {
         // If we made it here, we are at the same split index in each version and there is at least one string in the comparison.
-        // Example, 8.1.1 versus 8.1-statefarm
+        // Example, 8.1.1 versus 8.1-text
         // If Left is a number and Right is a string that is not master, then Left is downstream from Right
         if (NumberUtils.isNumber(l[i]) && !NumberUtils.isNumber(r[i]) && r.length != 1) {
           return 1;
@@ -72,7 +72,7 @@ public class VersionComparator<T>
     // But the longer version might have a string value on the end and not an integer
     // Check if a version has a string value before doing the simple length comparison.
     // A version with a string value should register upstream.
-    // Example, 8.1 versus 8.1-statefarm.  8.1 is downstream from 8.1-statefarm.
+    // Example, 8.1 versus 8.1-text.  8.1 is downstream from 8.1-text.
     if (!NumberUtils.isNumber(l[l.length-1])) {
       return -1;
     }
