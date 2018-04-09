@@ -85,7 +85,9 @@ public class MergeConflictDetectorServlet
     
     // If the target is not master, find target branch and upstream releases (if any).
     if (!mcd.getToBranchId().equals("refs/heads/master")) {
+      //String toBranchNamePrefix = mcd.getToBranchName().replaceAll("release\\/([^0-9]*).*", "release/$1");
       String toBranchNamePrefix = mcd.getToBranchName().replaceAll("release\\/.*", "release/");
+      System.out.println("filterText = " + toBranchNamePrefix);
       RepositoryBranchesRequest repoBranchesRequest = new RepositoryBranchesRequest
           .Builder(mcd.getToRepo())
           .filterText(toBranchNamePrefix)
@@ -95,6 +97,7 @@ public class MergeConflictDetectorServlet
           new PageRequestImpl(0, PageRequestImpl.MAX_PAGE_LIMIT));
       // Iterate over branches and comapre with source branch version to hit upstream releases.
       branches.stream()
+              .filter(b -> mcd.isRelated(b))
               .filter(b -> mcd.isUpstreamBranch(b))
               .sorted(branchComparator)
               .forEachOrdered(b -> dryRunMerge(mcd, b));
@@ -127,7 +130,6 @@ public class MergeConflictDetectorServlet
   {
     List<String> files = null;
     List<GitMergeConflict> mergeConflicts = null;
-    List<GitMergeConflict> mergeConflictResults = null;
     List<String> message = new LinkedList<String>();
     MergeCommandParameters params = new MergeCommandParameters
         .Builder()
@@ -152,8 +154,7 @@ public class MergeConflictDetectorServlet
       // Checking the type of the Exception obj prior to the cast using instanceof did not work.
       // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
       try {
-        mergeConflictResults = new LinkedList<GitMergeConflict>(((GitMergeException)e.getCause()).getConflicts());
-        for (GitMergeConflict mergeConflict : mergeConflictResults) {
+        for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
           files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
           message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
                                         + mergeConflict.getTheirChange());

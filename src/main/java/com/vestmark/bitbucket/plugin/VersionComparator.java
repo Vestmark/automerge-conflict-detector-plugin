@@ -41,9 +41,10 @@ public class VersionComparator<T>
 
   public int compare(T o1, T o2)
   {
-    String[] l = valueMapper.apply(o1).replaceAll("release\\/","").split(splitPattern);
-    String[] r = valueMapper.apply(o2).replaceAll("release\\/","").split(splitPattern);
+    String[] l = valueMapper.apply(o1).split(splitPattern);
+    String[] r = valueMapper.apply(o2).split(splitPattern);
     int length = l.length < r.length ? l.length : r.length;
+    System.out.println("Main Compare " +  valueMapper.apply(o1) + " and "+ valueMapper.apply(o2));
     for (int i = 0; i < length; i++) {
       int result = 0;
       if (NumberUtils.isNumber(l[i]) && NumberUtils.isNumber(r[i])) {
@@ -52,8 +53,8 @@ public class VersionComparator<T>
         result = leftInt.compareTo(rightInt);
       }
       else {
-        // If we made it here, there is at least one string in the comparison.
-        // Example, 8.1 versus ubs-8.0.10
+        // If we made it here, we are at the same split index in each version and there is at least one string in the comparison.
+        // Example, 8.1.1 versus 8.1-statefarm
         // If Left is a number and Right is a string that is not master, then Left is downstream from Right
         if (NumberUtils.isNumber(l[i]) && !NumberUtils.isNumber(r[i]) && r.length != 1) {
           return 1;
@@ -65,28 +66,34 @@ public class VersionComparator<T>
         result = l[i].compareTo(r[i]);
       }
       if (result != 0) {
+        System.out.println("Returning " + result);
         return result;
       }
     }
-    // If we made it here, we have two versions of unequal lengths, with equal split values up to the shorter of the two
+    // If we are here, we have two versions of unequal lengths, with equal split values up to the shorter of the two
     // But the longer version might have a string value on the end and not an integer
     // Check if a version has a string value before doing the simple length comparison.
     // A version with a string value should register upstream.
     // Example, 8.1 versus 8.1-statefarm.  8.1 is downstream from 8.1-statefarm.
     if (!NumberUtils.isNumber(l[l.length-1])) {
+      System.out.println("String found in Left, Returning -1");
       return -1;
     }
     if (!NumberUtils.isNumber(r[r.length-1])) {
+      System.out.println("String found in right, Returning 1");
       return 1;
     }
     // If we made it here, a simple length comparison will do.
     // Example, 8.1 versus 8.1.1.  8.1 is upstream from 8.1.1.
     if (l.length < r.length) {
+      System.out.println("Left is shorter, Returning -1");
       return -1;
     }
     if (l.length > r.length) {
+      System.out.println("Left is larger, Returning 1");
       return 1;
     }
+    System.out.println("Returning 0");
     return 0;
   }
 }
