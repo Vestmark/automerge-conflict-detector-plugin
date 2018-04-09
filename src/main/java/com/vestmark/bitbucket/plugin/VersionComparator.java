@@ -44,7 +44,6 @@ public class VersionComparator<T>
     String[] l = valueMapper.apply(o1).split(splitPattern);
     String[] r = valueMapper.apply(o2).split(splitPattern);
     int length = l.length < r.length ? l.length : r.length;
-    System.out.println("Main Compare " +  valueMapper.apply(o1) + " and "+ valueMapper.apply(o2));
     for (int i = 0; i < length; i++) {
       int result = 0;
       if (NumberUtils.isNumber(l[i]) && NumberUtils.isNumber(r[i])) {
@@ -66,7 +65,6 @@ public class VersionComparator<T>
         result = l[i].compareTo(r[i]);
       }
       if (result != 0) {
-        System.out.println("Returning " + result);
         return result;
       }
     }
@@ -76,24 +74,19 @@ public class VersionComparator<T>
     // A version with a string value should register upstream.
     // Example, 8.1 versus 8.1-statefarm.  8.1 is downstream from 8.1-statefarm.
     if (!NumberUtils.isNumber(l[l.length-1])) {
-      System.out.println("String found in Left, Returning -1");
       return -1;
     }
     if (!NumberUtils.isNumber(r[r.length-1])) {
-      System.out.println("String found in right, Returning 1");
       return 1;
     }
     // If we made it here, a simple length comparison will do.
     // Example, 8.1 versus 8.1.1.  8.1 is upstream from 8.1.1.
     if (l.length < r.length) {
-      System.out.println("Left is shorter, Returning -1");
       return -1;
     }
     if (l.length > r.length) {
-      System.out.println("Left is larger, Returning 1");
       return 1;
     }
-    System.out.println("Returning 0");
     return 0;
   }
 }

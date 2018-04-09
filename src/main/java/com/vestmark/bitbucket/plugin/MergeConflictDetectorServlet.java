@@ -85,9 +85,7 @@ public class MergeConflictDetectorServlet
     
     // If the target is not master, find target branch and upstream releases (if any).
     if (!mcd.getToBranchId().equals("refs/heads/master")) {
-      //String toBranchNamePrefix = mcd.getToBranchName().replaceAll("release\\/([^0-9]*).*", "release/$1");
       String toBranchNamePrefix = mcd.getToBranchName().replaceAll("release\\/.*", "release/");
-      System.out.println("filterText = " + toBranchNamePrefix);
       RepositoryBranchesRequest repoBranchesRequest = new RepositoryBranchesRequest
           .Builder(mcd.getToRepo())
           .filterText(toBranchNamePrefix)
