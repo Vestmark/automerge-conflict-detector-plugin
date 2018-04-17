@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
+import java.lang.reflect.Method;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -92,8 +93,8 @@ public class MergeConflictDetectorServlet
         pullRequestSupplier.getById(repoId, pullRequestId), hostUrl);
     BranchClassifier bc = modelService.getModel(mcd.getToRepo()).getClassifier();
     BranchType toBranchType = bc.getType(mcd.getToBranch());
-    // If the target is not master, find target branch and upstream releases (if any).
-    if (!mcd.getToBranchId().equals("refs/heads/master")) {
+    // If the target is not master and is a release branch, find target branch and upstream releases (if any).
+    if (toBranchType.getId().equals("RELEASE") && !mcd.getToBranchId().equals("refs/heads/master")) {
       Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
       branches.stream()
               .filter(b -> mcd.isRelated(b))
