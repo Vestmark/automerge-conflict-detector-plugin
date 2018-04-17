@@ -132,8 +132,8 @@ public class MergeConflictDetector
 
   public boolean isRelated(Branch toBranch)
   {
-    String family = toBranchName.replaceAll("release\\/([^\\.|-]*).*", "$1");
-    String toBranchFamily = toBranch.getDisplayId().replaceAll("release\\/([^\\.|-]*).*", "$1");
+    String family = toBranchName.substring(toBranchName.lastIndexOf("/")).replaceAll("\\/([^\\.|-]*).*", "$1");
+    String toBranchFamily = toBranch.getDisplayId().substring(toBranch.getDisplayId().lastIndexOf("/")).replaceAll("\\/([^\\.|-]*).*", "$1");
     if (NumberUtils.isNumber(family) && NumberUtils.isNumber(toBranchFamily)) {
       return true;
     }

@@ -32,6 +32,10 @@ import com.atlassian.bitbucket.repository.MinimalRef;
 import com.atlassian.bitbucket.repository.RefOrder;
 import com.atlassian.bitbucket.repository.RefService;
 import com.atlassian.bitbucket.repository.RepositoryBranchesRequest;
+import com.atlassian.bitbucket.branch.model.BranchModel;
+import com.atlassian.bitbucket.branch.model.BranchClassifier;
+import com.atlassian.bitbucket.branch.model.BranchModelService;
+import com.atlassian.bitbucket.branch.model.BranchType;
 import com.atlassian.bitbucket.pull.PullRequestSupplier;
 import com.atlassian.bitbucket.scm.MergeCommandParameters;
 import com.atlassian.bitbucket.scm.MergeException;
@@ -40,6 +44,7 @@ import com.atlassian.bitbucket.scm.git.command.merge.GitMergeException;
 import com.atlassian.bitbucket.scm.git.command.merge.conflict.GitMergeConflict;
 import com.atlassian.bitbucket.util.Page;
 import com.atlassian.bitbucket.util.PageRequestImpl;
+import com.atlassian.bitbucket.util.PageRequest;
 import com.atlassian.plugin.spring.scanner.annotation.imports.ComponentImport;
 import com.atlassian.soy.renderer.SoyException;
 import com.atlassian.soy.renderer.SoyTemplateRenderer;
@@ -53,6 +58,7 @@ public class MergeConflictDetectorServlet
   private final GitExtendedCommandFactory extendedCmdFactory;
   private final PullRequestSupplier pullRequestSupplier;
   private final RefService refService;
+  private final BranchModelService modelService;
   private final SoyTemplateRenderer soyTemplateRenderer;
   private final VersionComparator<Branch> branchComparator;
 
@@ -61,16 +67,18 @@ public class MergeConflictDetectorServlet
                                       @ComponentImport GitExtendedCommandFactory extendedCmdFactory, 
                                       @ComponentImport AuthenticationContext authenticationContext, 
                                       @ComponentImport SoyTemplateRenderer soyTemplateRenderer, 
-                                      @ComponentImport RefService refService)
+                                      @ComponentImport RefService refService,
+                                      @ComponentImport BranchModelService modelService)
   {
     this.authenticationContext = authenticationContext;
     this.extendedCmdFactory = extendedCmdFactory;
     this.pullRequestSupplier = pullRequestSupplier;
     this.refService = refService;
+    this.modelService = modelService;
     this.soyTemplateRenderer = soyTemplateRenderer;
     branchComparator = new VersionComparator<Branch>(Branch::getDisplayId);
   }
-
+  
   @Override
   protected void doGet(HttpServletRequest request, HttpServletResponse response) 
       throws IOException, ServletException
@@ -82,25 +90,17 @@ public class MergeConflictDetectorServlet
     long pullRequestId = Long.parseLong(urlPathInfoComponents[2]);
     MergeConflictDetector mcd = new MergeConflictDetector(authenticationContext.getCurrentUser(), 
         pullRequestSupplier.getById(repoId, pullRequestId), hostUrl);
-    
+    BranchClassifier bc = modelService.getModel(mcd.getToRepo()).getClassifier();
+    BranchType toBranchType = bc.getType(mcd.getToBranch());
     // If the target is not master, find target branch and upstream releases (if any).
     if (!mcd.getToBranchId().equals("refs/heads/master")) {
-      String toBranchNamePrefix = mcd.getToBranchName().replaceAll("release\\/.*", "release/");
-      RepositoryBranchesRequest repoBranchesRequest = new RepositoryBranchesRequest
-          .Builder(mcd.getToRepo())
-          .filterText(toBranchNamePrefix)
-          .order(RefOrder.ALPHABETICAL)
-          .build();
-      Page<Branch> branches = refService.getBranches(repoBranchesRequest, 
-          new PageRequestImpl(0, PageRequestImpl.MAX_PAGE_LIMIT));
-      // Iterate over branches and comapre with source branch version to hit upstream releases.
+      Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
       branches.stream()
               .filter(b -> mcd.isRelated(b))
               .filter(b -> mcd.isUpstreamBranch(b))
               .sorted(branchComparator)
               .forEachOrdered(b -> dryRunMerge(mcd, b));
     }
-
     dryRunMerge(mcd, refService.getDefaultBranch(mcd.getToRepo())); // Always merge to default.
     render(response, ImmutableMap.<String, Object>of("mcd", mcd));  // Render Soy template.
   }

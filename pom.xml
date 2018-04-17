@@ -48,6 +48,12 @@
     <dependencies>
         <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
+            <artifactId>bitbucket-branch-api</artifactId>
+            <scope>provided</scope>
+            <version>${bitbucket.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.bitbucket.server</groupId>
             <artifactId>bitbucket-api</artifactId>
             <scope>provided</scope>
         </dependency>
