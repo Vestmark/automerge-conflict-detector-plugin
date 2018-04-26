@@ -39,10 +39,25 @@ public class VersionComparator<T>
     this.splitPattern = splitPattern;
   }
 
+  public String getFamily(String branchName) {
+    String[] branchComponents = branchName.split("\\/");
+    int prefixLength = branchComponents[0].length();
+    int versionLength = branchComponents[branchComponents.length-1].replaceAll("[A-Za-z]*(-?.*)$","$1").length();
+    // Family is everything in the branch name between the prefix and the version, exclusively
+    return branchName.substring(prefixLength + 1, branchName.length() - versionLength);
+  }
+
+  public String getVersion(String branchName) {
+    String[] branchComponents = branchName.split("\\/");
+    return branchComponents[branchComponents.length-1].replaceAll("[A-Za-z]*-?(.*)$","$1");
+  }
+
   public int compare(T o1, T o2)
   {
-    String[] l = valueMapper.apply(o1).split(splitPattern);
-    String[] r = valueMapper.apply(o2).split(splitPattern);
+    // If we are here, we can be guaranteed that the branches being compared are in the same family due to prior filtering.
+    // So all we want for comparison is the version.
+    String[] l = getVersion(valueMapper.apply(o1)).split(splitPattern);
+    String[] r = getVersion(valueMapper.apply(o2)).split(splitPattern);
     int length = l.length < r.length ? l.length : r.length;
     for (int i = 0; i < length; i++) {
       int result = 0;
@@ -52,12 +67,36 @@ public class VersionComparator<T>
         result = leftInt.compareTo(rightInt);
       }
       else {
-        result = l[i].compareTo(r[i]);
+        // If we made it here, we are at the same split index in each version and there is at least one string in the comparison.
+        // Example, 8.1.1 versus 8.1-text
+        // If Left is a number and Right is a string that is not master, then Left is downstream from Right
+        if (NumberUtils.isNumber(l[i]) && !NumberUtils.isNumber(r[i]) && r.length != 1) {
+          return 1;
+        }
+        // If Left is a string that is not master and Right is a number, then Left is upstream from Right
+        if (!NumberUtils.isNumber(l[i]) && NumberUtils.isNumber(r[i]) && l.length != 1) {
+          return -1;
+        }
+        // If we are here, must be two strings.  A simple comparison will do.
+        return l[i].compareTo(r[i]);
       }
       if (result != 0) {
         return result;
       }
     }
+    // If we are here, we have two versions of unequal lengths, with equal split values up to the shorter of the two
+    // But the longer version might have a string value on the end and not an integer
+    // Check if a version has a string value before doing the simple length comparison.
+    // A version with a string value should register upstream.
+    // Example, 8.1 versus 8.1-text.  8.1 is downstream from 8.1-text.
+    if (!NumberUtils.isNumber(l[l.length-1])) {
+      return -1;
+    }
+    if (!NumberUtils.isNumber(r[r.length-1])) {
+      return 1;
+    }
+    // If we made it here, a simple length comparison will do.
+    // Example, 8.1 versus 8.1.1.  8.1 is upstream from 8.1.1.
     if (l.length < r.length) {
       return -1;
     }

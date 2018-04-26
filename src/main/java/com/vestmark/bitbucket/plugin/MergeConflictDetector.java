@@ -17,6 +17,8 @@ package com.vestmark.bitbucket.plugin;
 import java.util.List;
 import java.util.LinkedList;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 import com.atlassian.bitbucket.pull.PullRequest;
 import com.atlassian.bitbucket.pull.PullRequestRef;
 import com.atlassian.bitbucket.repository.Branch;
@@ -128,6 +130,11 @@ public class MergeConflictDetector
     mergeResults.add(new MergeResult(toBranch, mergeConflicts, messages, files));
   }
 
+  public boolean isRelated(Branch otherBranch)
+  {
+    return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId()).equals(VersionComparator.AS_STRING.getFamily(toBranchName));
+  }
+  
   public boolean isUpstreamBranch(Branch toBranch)
   {
     return VersionComparator.AS_STRING.compare(toBranch.getDisplayId(), toBranchName) >= 0 ? true : false;
