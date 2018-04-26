@@ -130,17 +130,9 @@ public class MergeConflictDetector
     mergeResults.add(new MergeResult(toBranch, mergeConflicts, messages, files));
   }
 
-  public boolean isRelated(Branch toBranch)
+  public boolean isRelated(Branch otherBranch)
   {
-    String family = toBranchName.substring(toBranchName.lastIndexOf("/")).replaceAll("\\/([^\\.|-]*).*", "$1");
-    String toBranchFamily = toBranch.getDisplayId().substring(toBranch.getDisplayId().lastIndexOf("/")).replaceAll("\\/([^\\.|-]*).*", "$1");
-    if (NumberUtils.isNumber(family) && NumberUtils.isNumber(toBranchFamily)) {
-      return true;
-    }
-    if (family.equals(toBranchFamily)) {
-      return true;
-    }
-    return false;
+    return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId()).equals(VersionComparator.AS_STRING.getFamily(toBranchName));
   }
   
   public boolean isUpstreamBranch(Branch toBranch)

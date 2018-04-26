@@ -39,10 +39,25 @@ public class VersionComparator<T>
     this.splitPattern = splitPattern;
   }
 
+  public String getFamily(String branchName) {
+    String[] branchComponents = branchName.split("\\/");
+    int prefixLength = branchComponents[0].length();
+    int versionLength = branchComponents[branchComponents.length-1].replaceAll("[A-Za-z]*(-?.*)$","$1").length();
+    // Family is everything in the branch name between the prefix and the version, exclusively
+    return branchName.substring(prefixLength + 1, branchName.length() - versionLength);
+  }
+
+  public String getVersion(String branchName) {
+    String[] branchComponents = branchName.split("\\/");
+    return branchComponents[branchComponents.length-1].replaceAll("[A-Za-z]*-?(.*)$","$1");
+  }
+
   public int compare(T o1, T o2)
   {
-    String[] l = valueMapper.apply(o1).split(splitPattern);
-    String[] r = valueMapper.apply(o2).split(splitPattern);
+    // If we are here, we can be guaranteed that the branches being compared are in the same family due to prior filtering.
+    // So all we want for comparison is the version.
+    String[] l = getVersion(valueMapper.apply(o1)).split(splitPattern);
+    String[] r = getVersion(valueMapper.apply(o2)).split(splitPattern);
     int length = l.length < r.length ? l.length : r.length;
     for (int i = 0; i < length; i++) {
       int result = 0;
@@ -62,7 +77,8 @@ public class VersionComparator<T>
         if (!NumberUtils.isNumber(l[i]) && NumberUtils.isNumber(r[i]) && l.length != 1) {
           return -1;
         }
-        result = l[i].compareTo(r[i]);
+        // If we are here, must be two strings.  A simple comparison will do.
+        return l[i].compareTo(r[i]);
       }
       if (result != 0) {
         return result;
