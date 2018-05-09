@@ -93,7 +93,7 @@ public class MergeConflictDetectorServlet
     BranchClassifier bc = modelService.getModel(mcd.getToRepo()).getClassifier();
     BranchType toBranchType = bc.getType(mcd.getToBranch());
     // If the target is not master and is a release branch, find target branch and upstream releases (if any).
-    if (toBranchType.getId().equals("RELEASE") && !mcd.getToBranchId().equals("refs/heads/master")) {
+    if (!mcd.getToBranchId().equals("refs/heads/master") && toBranchType.getId().equals("RELEASE") ) {
       Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
       branches.stream()
               .filter(b -> mcd.isRelated(b))
