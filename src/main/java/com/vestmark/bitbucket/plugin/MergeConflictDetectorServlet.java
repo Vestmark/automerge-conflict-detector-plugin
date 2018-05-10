@@ -145,7 +145,6 @@ public class MergeConflictDetectorServlet
       }
     } catch (Exception e) {
       if (e instanceof MergeException) {
-        System.out.println("Merge Exception Caught");
         files = new LinkedList<String>();
         mergeConflicts = new LinkedList<GitMergeConflict>();
         // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
@@ -165,11 +164,9 @@ public class MergeConflictDetectorServlet
         }
       } else {
         // Non Merge Exception
-        System.out.println("Non Merge Exception Caught" + e.getMessage());
         message.add(e.getMessage());
       }
     }
-
     mcd.addResult(toBranch, mergeConflicts, message, files);
   }
 }
