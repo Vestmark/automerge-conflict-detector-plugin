@@ -31,6 +31,9 @@
         <label key="mcd.conflicts.tab">Merge Conflicts</label>
         <link>/plugins/servlet/mcd/${repository.id}/${pullRequest.id}</link>
         <tooltip key="mcd.conflicts.tab.tooltip"></tooltip>
+        <condition class="com.atlassian.bitbucket.web.conditions.PullRequestInState">
+          <param name="state">OPEN</param>
+        </condition>
     </web-item>
 
     <web-resource key="mcd-css" name="Merge Conflict Detector CSS">
