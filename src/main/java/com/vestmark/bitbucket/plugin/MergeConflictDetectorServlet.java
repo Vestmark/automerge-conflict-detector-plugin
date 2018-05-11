@@ -93,7 +93,7 @@ public class MergeConflictDetectorServlet
     BranchClassifier bc = modelService.getModel(mcd.getToRepo()).getClassifier();
     BranchType toBranchType = bc.getType(mcd.getToBranch());
     // If the target is not master and is a release branch, find target branch and upstream releases (if any).
-    if (toBranchType.getId().equals("RELEASE") && !mcd.getToBranchId().equals("refs/heads/master")) {
+    if (!mcd.getToBranchId().equals("refs/heads/master") && toBranchType.getId().equals("RELEASE") ) {
       Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
       branches.stream()
               .filter(b -> mcd.isRelated(b))
@@ -139,30 +139,34 @@ public class MergeConflictDetectorServlet
         .build();
     try {
       Branch result = extendedCmdFactory.merge(mcd.getToRepo(), params).call();
-      // A result from the merge indicates an unsuccesful dry run!
+      // A result from the merge indicates an unsuccessful dry run!
       if (result != null) {
         message.add("Merge committed! Commit ID: " + result.getLatestCommit());
       }
-    } catch (MergeException e) {
-      files = new LinkedList<String>();
-      mergeConflicts = new LinkedList<GitMergeConflict>();
-      // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
-      // The (GitMergeException) cast below causes the plugin to crash because of it.
-      // Adding a CommandFailedException catch block did not work.
-      // Checking the type of the Exception obj prior to the cast using instanceof did not work.
-      // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
-      try {
-        for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
-          files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
-          message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
-                                        + mergeConflict.getTheirChange());
-          mergeConflicts.add(mergeConflict);
+    } catch (Exception e) {
+      if (e instanceof MergeException) {
+        files = new LinkedList<String>();
+        mergeConflicts = new LinkedList<GitMergeConflict>();
+        // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
+        // The (GitMergeException) cast below causes the plugin to crash because of it.
+        // Adding a CommandFailedException catch block did not work.
+        // Checking the type of the Exception obj prior to the cast using instanceof did not work.
+        // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
+        try {
+          for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
+            files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
+            message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
+                                          + mergeConflict.getTheirChange());
+            mergeConflicts.add(mergeConflict);
+          }
+        } catch (Exception f) {
+          message.add(e.getMessage());
         }
-      } catch (Exception f) {
+      } else {
+        // Non Merge Exception
         message.add(e.getMessage());
       }
     }
-
     mcd.addResult(toBranch, mergeConflicts, message, files);
   }
 }
