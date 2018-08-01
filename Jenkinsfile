@@ -3,7 +3,6 @@ pipeline {
     stages {
         stage('Package') {
             steps {
-                bat 'set'
                 bat 'atlas-mvn package'
             }
         }
