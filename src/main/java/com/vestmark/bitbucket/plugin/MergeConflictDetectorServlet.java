@@ -15,7 +15,6 @@
 package com.vestmark.bitbucket.plugin;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -59,7 +58,6 @@ public class MergeConflictDetectorServlet
 {
 
   private static final long serialVersionUID = 1L;
-  private static final int PR_PAGE_SIZE = 100;
   private final AuthenticationContext authenticationContext;
   private final GitExtendedCommandFactory extendedCmdFactory;
   private final PullRequestService pullRequestService;
@@ -118,31 +116,37 @@ public class MergeConflictDetectorServlet
 
   private void checkForAutoMergeFailure(MergeConflictDetector mcd)
   {
-    PullRequestSearchRequest prsReq = new PullRequestSearchRequest.Builder().state(PullRequestState.OPEN)
-        .order(PullRequestOrder.NEWEST)
-        .fromRepositoryId(mcd.getFromRepo().getId())
-        .toRepositoryId(mcd.getToRepo().getId())
-        .build();
-    long totalNPRs = pullRequestService.count(prsReq);
-    int maxNPRs = PR_PAGE_SIZE;
-    if (totalNPRs < maxNPRs) {
-      maxNPRs = (int) totalNPRs;
-    }
-    int begIdx = 0;
-    while (begIdx < totalNPRs) {
-      PageRequest pgReq = new PageRequestImpl(begIdx, maxNPRs).buildRestrictedPageRequest(maxNPRs);
-      Page<PullRequest> pPRs = pullRequestService.search(prsReq, pgReq);
-      boolean amfPRExists = pPRs.stream()
-          .anyMatch(r -> r.getTitle().contains("Automatic merge failure") && CollectionUtils.isEmpty(r.getReviewers()));
-      if (amfPRExists) {
-        mcd.addResult(
-            refService.getDefaultBranch(mcd.getToRepo()),
-            Collections.emptyList(),
-            Arrays.asList("Please check for automatic merge failure!"),
-            Collections.emptyList());
-        return;
+    try {
+      PullRequestSearchRequest prsReq = new PullRequestSearchRequest.Builder().state(PullRequestState.OPEN)
+          .order(PullRequestOrder.NEWEST)
+          .fromRepositoryId(mcd.getFromRepo().getId())
+          .toRepositoryId(mcd.getToRepo().getId())
+          .build();
+      long totalNPRs = pullRequestService.count(prsReq);
+      int maxNPRs = 100;
+      if (totalNPRs < maxNPRs) {
+        maxNPRs = (int) totalNPRs;
       }
-      begIdx += maxNPRs;
+      int begIdx = 0;
+      while (begIdx < totalNPRs) {
+        PageRequest pgReq = new PageRequestImpl(begIdx, maxNPRs).buildRestrictedPageRequest(maxNPRs);
+        Page<PullRequest> pPRs = pullRequestService.search(prsReq, pgReq);
+        boolean amfPRExists = pPRs.stream()
+            .anyMatch(
+                r -> r.getTitle().contains("Automatic merge failure") && CollectionUtils.isEmpty(r.getReviewers()));
+        if (amfPRExists) {
+          mcd.addResult(
+              refService.getDefaultBranch(mcd.getToRepo()),
+              Collections.emptyList(),
+              Arrays.asList("Please check for automatic merge failure!"),
+              Collections.emptyList());
+          return;
+        }
+        begIdx += maxNPRs;
+      }
+    }
+    catch (Exception e) {
+      mcd.addResult(refService.getDefaultBranch(mcd.getToRepo()), null, Arrays.asList(e.getMessage()), null);
     }
   }
 
