@@ -211,8 +211,7 @@ public class MergeConflictDetectorServlet
         }
       }
       else {
-        // Non Merge Exception
-        message.add(e.getMessage());
+        message.add("Non-MergeException: " + e.getMessage());
       }
     }
     mcd.addResult(toBranch, mergeConflicts, message, files);
