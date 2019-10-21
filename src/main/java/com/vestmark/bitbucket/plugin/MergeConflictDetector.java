@@ -26,164 +26,135 @@ import com.atlassian.bitbucket.user.ApplicationUser;
 import com.vestmark.bitbucket.plugin.VersionComparator;
 
 /**
- * The MergeConflictDetector class stores the pull request instance and exposes details about it through accessor
- * methods that can be accessed through Soy.
+ * The MergeConflictDetector class stores the pull request instance and exposes
+ * details about it through accessor methods that can be accessed through Soy.
  */
-public class MergeConflictDetector
-{
+public class MergeConflictDetector {
 
-  private final ApplicationUser user;
-  private final PullRequest pullRequest;
-  private final PullRequestRef fromBranch;
-  private final PullRequestRef toBranch;
-  private final Repository fromRepo;
-  private final Repository toRepo;
-  private final String fromBranchId; // ID format: refs/head/master
-  private final String toBranchId;
-  private final String fromBranchName; // Display ID format: master
-  private final String toBranchName;
-  private final String compareUrlPrefix;
-  private final List<MergeResult> mergeResults;
+	private final ApplicationUser user;
+	private final PullRequest pullRequest;
+	private final PullRequestRef fromBranch;
+	private final PullRequestRef toBranch;
+	private final Repository fromRepo;
+	private final Repository toRepo;
+	private final String fromBranchId; // ID format: refs/head/master
+	private final String toBranchId;
+	private final String fromBranchName; // Display ID format: master
+	private final String toBranchName;
+	private final String compareUrlPrefix;
+	private final List<MergeResult> mergeResults;
 
-  public MergeConflictDetector(ApplicationUser user, PullRequest pullRequest, String hostUrl)
-  {
-    this.user = user;
-    this.pullRequest = pullRequest;
-    fromBranch = pullRequest.getFromRef();
-    toBranch = pullRequest.getToRef();
-    fromRepo = fromBranch.getRepository();
-    toRepo = toBranch.getRepository();
-    fromBranchId = fromBranch.getId();
-    toBranchId = toBranch.getId();
-    fromBranchName = fromBranch.getDisplayId();
-    toBranchName = toBranch.getDisplayId();
-    compareUrlPrefix = hostUrl + "/projects/" + fromRepo.getProject().getKey() + "/repos/" + fromRepo.getSlug()
-        + "/compare/diff?sourceBranch=" + fromBranchId + "&targetBranch=";
-    mergeResults = new LinkedList<MergeResult>();
-  }
+	public MergeConflictDetector(ApplicationUser user, PullRequest pullRequest, String hostUrl) {
+		this.user = user;
+		this.pullRequest = pullRequest;
+		fromBranch = pullRequest.getFromRef();
+		toBranch = pullRequest.getToRef();
+		fromRepo = fromBranch.getRepository();
+		toRepo = toBranch.getRepository();
+		fromBranchId = fromBranch.getId();
+		toBranchId = toBranch.getId();
+		fromBranchName = fromBranch.getDisplayId();
+		toBranchName = toBranch.getDisplayId();
+		compareUrlPrefix = hostUrl + "/projects/" + fromRepo.getProject().getKey() + "/repos/" + fromRepo.getSlug()
+				+ "/compare/diff?sourceBranch=" + fromBranchId + "&targetBranch=";
+		mergeResults = new LinkedList<MergeResult>();
+	}
 
-  public ApplicationUser getUser()
-  {
-    return user;
-  }
+	public ApplicationUser getUser() {
+		return user;
+	}
 
-  public PullRequest getPullRequest()
-  {
-    return pullRequest;
-  }
+	public PullRequest getPullRequest() {
+		return pullRequest;
+	}
 
-  public PullRequestRef getFromBranch()
-  {
-    return fromBranch;
-  }
+	public PullRequestRef getFromBranch() {
+		return fromBranch;
+	}
 
-  public PullRequestRef getToBranch()
-  {
-    return toBranch;
-  }
+	public PullRequestRef getToBranch() {
+		return toBranch;
+	}
 
-  public Repository getFromRepo()
-  {
-    return fromRepo;
-  }
+	public Repository getFromRepo() {
+		return fromRepo;
+	}
 
-  public Repository getToRepo()
-  {
-    return toRepo;
-  }
+	public Repository getToRepo() {
+		return toRepo;
+	}
 
-  public String getFromBranchId()
-  {
-    return fromBranchId;
-  }
+	public String getFromBranchId() {
+		return fromBranchId;
+	}
 
-  public String getToBranchId()
-  {
-    return toBranchId;
-  }
+	public String getToBranchId() {
+		return toBranchId;
+	}
 
-  public String getFromBranchName()
-  {
-    return fromBranchName;
-  }
+	public String getFromBranchName() {
+		return fromBranchName;
+	}
 
-  public String getToBranchName()
-  {
-    return toBranchName;
-  }
+	public String getToBranchName() {
+		return toBranchName;
+	}
 
-  public String getCompareUrlPrefix()
-  {
-    return compareUrlPrefix;
-  }
+	public String getCompareUrlPrefix() {
+		return compareUrlPrefix;
+	}
 
-  public List<MergeResult> getMergeResults()
-  {
-    return mergeResults;
-  }
+	public List<MergeResult> getMergeResults() {
+		return mergeResults;
+	}
 
-  public void addResult(
-      Branch toBranch,
-      List<GitMergeConflict> mergeConflicts,
-      List<String> messages,
-      List<String> files)
-  {
-    mergeResults.add(new MergeResult(toBranch, mergeConflicts, messages, files));
-  }
+	public void addResult(Branch toBranch, List<GitMergeConflict> mergeConflicts, List<String> messages,
+			List<String> files) {
+		mergeResults.add(new MergeResult(toBranch, mergeConflicts, messages, files));
+	}
 
-  public boolean isRelated(Branch otherBranch)
-  {
-    return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId())
-        .equals(VersionComparator.AS_STRING.getFamily(toBranchName));
-  }
+	public boolean isRelated(Branch otherBranch) {
+		return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId())
+				.equals(VersionComparator.AS_STRING.getFamily(toBranchName));
+	}
 
-  public boolean isUpstreamBranch(Branch toBranch)
-  {
-    return VersionComparator.AS_STRING.compare(toBranch.getDisplayId(), toBranchName) >= 0 ? true : false;
-  }
+	public boolean isUpstreamBranch(Branch toBranch) {
+		return VersionComparator.AS_STRING.compare(toBranch.getDisplayId(), toBranchName) >= 0 ? true : false;
+	}
 
-  /*
-   * The MergeResult inner class must be public to fulfill JavaBeans requirements in order for the accessor methods to
-   * be available in Soy.
-   */
-  public class MergeResult
-  {
+	/*
+	 * The MergeResult inner class must be public to fulfill JavaBeans requirements
+	 * in order for the accessor methods to be available in Soy.
+	 */
+	public class MergeResult {
 
-    private final Branch toBranch;
-    private final List<GitMergeConflict> mergeConflicts;
-    private final List<String> messages;
-    private final List<String> files;
+		private final Branch toBranch;
+		private final List<GitMergeConflict> mergeConflicts;
+		private final List<String> messages;
+		private final List<String> files;
 
-    public MergeResult(
-        Branch toBranch,
-        List<GitMergeConflict> mergeConflicts,
-        List<String> messages,
-        List<String> files)
-    {
-      this.toBranch = toBranch;
-      this.mergeConflicts = mergeConflicts;
-      this.messages = messages;
-      this.files = files;
-    }
+		public MergeResult(Branch toBranch, List<GitMergeConflict> mergeConflicts, List<String> messages,
+				List<String> files) {
+			this.toBranch = toBranch;
+			this.mergeConflicts = mergeConflicts;
+			this.messages = messages;
+			this.files = files;
+		}
 
-    public Branch getToBranch()
-    {
-      return toBranch;
-    }
+		public Branch getToBranch() {
+			return toBranch;
+		}
 
-    public List<GitMergeConflict> getMergeConflicts()
-    {
-      return mergeConflicts;
-    }
+		public List<GitMergeConflict> getMergeConflicts() {
+			return mergeConflicts;
+		}
 
-    public List<String> getMessages()
-    {
-      return messages;
-    }
+		public List<String> getMessages() {
+			return messages;
+		}
 
-    public List<String> getFiles()
-    {
-      return files;
-    }
-  }
+		public List<String> getFiles() {
+			return files;
+		}
+	}
 }
