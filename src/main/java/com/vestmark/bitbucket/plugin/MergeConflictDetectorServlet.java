@@ -56,10 +56,8 @@ import com.google.common.collect.ImmutableMap;
 public class MergeConflictDetectorServlet
     extends HttpServlet
 {
-  /**
-   * 
-   */
   private static final long serialVersionUID = 1L;
+  
   private final AuthenticationContext authenticationContext;
   private final GitExtendedCommandFactory extendedCmdFactory;
   private final PullRequestService pullRequestService;
