@@ -26,8 +26,8 @@ import com.atlassian.bitbucket.user.ApplicationUser;
 import com.vestmark.bitbucket.plugin.VersionComparator;
 
 /**
- * The MergeConflictDetector class stores the pull request instance and exposes details about it through accessor
- * methods that can be accessed through Soy.
+ * The MergeConflictDetector class stores the pull request instance and exposes details about it
+ * through accessor methods that can be accessed through Soy.
  */
 public class MergeConflictDetector
 {
@@ -57,8 +57,9 @@ public class MergeConflictDetector
     toBranchId = toBranch.getId();
     fromBranchName = fromBranch.getDisplayId();
     toBranchName = toBranch.getDisplayId();
-    compareUrlPrefix = hostUrl + "/projects/" + fromRepo.getProject().getKey() + "/repos/" + fromRepo.getSlug()
-        + "/compare/diff?sourceBranch=" + fromBranchId + "&targetBranch=";
+    compareUrlPrefix = hostUrl + "/projects/" + fromRepo.getProject().getKey() + "/repos/" 
+        + fromRepo.getSlug() + "/compare/diff?sourceBranch=" + fromBranchId 
+        + "&targetBranch=";
     mergeResults = new LinkedList<MergeResult>();
   }
 
@@ -122,19 +123,15 @@ public class MergeConflictDetector
     return mergeResults;
   }
 
-  public void addResult(
-      Branch toBranch,
-      List<GitMergeConflict> mergeConflicts,
-      List<String> messages,
-      List<String> files)
+  public void addResult(Branch toBranch, List<GitMergeConflict> mergeConflicts, 
+      List<String> messages, List<String> files)
   {
     mergeResults.add(new MergeResult(toBranch, mergeConflicts, messages, files));
   }
 
   public boolean isRelated(Branch otherBranch)
   {
-    return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId())
-        .equals(VersionComparator.AS_STRING.getFamily(toBranchName));
+    return VersionComparator.AS_STRING.getFamily(otherBranch.getDisplayId()).equals(VersionComparator.AS_STRING.getFamily(toBranchName));
   }
 
   public boolean isUpstreamBranch(Branch toBranch)
@@ -143,8 +140,8 @@ public class MergeConflictDetector
   }
 
   /*
-   * The MergeResult inner class must be public to fulfill JavaBeans requirements in order for the accessor methods to
-   * be available in Soy.
+   * The MergeResult inner class must be public to fulfill JavaBeans requirements in order for the
+   * accessor methods to be available in Soy.
    */
   public class MergeResult
   {
@@ -154,11 +151,8 @@ public class MergeConflictDetector
     private final List<String> messages;
     private final List<String> files;
 
-    public MergeResult(
-        Branch toBranch,
-        List<GitMergeConflict> mergeConflicts,
-        List<String> messages,
-        List<String> files)
+    public MergeResult(Branch toBranch, List<GitMergeConflict> mergeConflicts, 
+        List<String> messages, List<String> files)
     {
       this.toBranch = toBranch;
       this.mergeConflicts = mergeConflicts;
