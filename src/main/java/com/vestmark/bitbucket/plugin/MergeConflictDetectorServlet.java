@@ -57,6 +57,7 @@ public class MergeConflictDetectorServlet
     extends HttpServlet
 {
   private static final long serialVersionUID = 1L;
+  private static final String AUTO_MERGE_FAIL = "Automatic merge failure";
   
   private final AuthenticationContext authenticationContext;
   private final GitExtendedCommandFactory extendedCmdFactory;
@@ -127,14 +128,12 @@ public class MergeConflictDetectorServlet
       while (begIdx < totalNPRs) {
         PageRequest pgReq = new PageRequestImpl(begIdx, maxNPRs).buildRestrictedPageRequest(maxNPRs);
         Page<PullRequest> pPRs = pullRequestService.search(prsReq, pgReq);
-        boolean amfPRExists = pPRs.stream()
-            .anyMatch(
-                r -> r.getTitle().contains("Automatic merge failure") && CollectionUtils.isEmpty(r.getReviewers()));
+        boolean amfPRExists = pPRs.stream().anyMatch(r -> r.getTitle().equals(AUTO_MERGE_FAIL));
         if (amfPRExists) {
           mcd.addResult(
               refService.getDefaultBranch(mcd.getToRepo()),
               Collections.emptyList(),
-              Arrays.asList("Please check for automatic merge failure!"),
+              Arrays.asList("Please check for " + AUTO_MERGE_FAIL + "!"),
               Collections.emptyList());
           return;
         }
