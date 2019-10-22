@@ -17,8 +17,6 @@ package com.vestmark.bitbucket.plugin;
 import java.util.List;
 import java.util.LinkedList;
 
-import org.apache.commons.lang3.math.NumberUtils;
-
 import com.atlassian.bitbucket.pull.PullRequest;
 import com.atlassian.bitbucket.pull.PullRequestRef;
 import com.atlassian.bitbucket.repository.Branch;
