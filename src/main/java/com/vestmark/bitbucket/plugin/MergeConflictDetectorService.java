@@ -14,18 +14,12 @@
 
 package com.vestmark.bitbucket.plugin;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -98,7 +92,6 @@ public class MergeConflictDetectorService {
     @Produces({MediaType.APPLICATION_JSON})
     @Path("/{repoIdStr}/{pullRequestIdStr}")
     public Response getMergeResults(@PathParam("repoIdStr") String repoIdStr, @PathParam("pullRequestIdStr") String pullRequestIdStr)
-      throws IOException, ServletException
     {
       String hostUrl = applicationPropertiesService.getBaseUrl().toString();
       int repoId = Integer.parseInt(repoIdStr);
