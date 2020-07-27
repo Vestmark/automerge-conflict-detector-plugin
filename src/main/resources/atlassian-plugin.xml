@@ -1,54 +1,22 @@
-<!--
-    Copyright 2017 Vestmark, Inc.
-    
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
-    in compliance with the License. You may obtain a copy of the License at
-    
-        http://www.apache.org/licenses/LICENSE-2.0
-    
-    Unless required by applicable law or agreed to in writing, software distributed under the License
-    is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express 
-    or implied. See the License for the specific language governing permissions and limitations under
-    the License.
--->
+<?xml version="1.0" encoding="UTF-8"?>
 
-<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2">
-    <plugin-info>
-        <description>${project.description}</description>
-        <version>${project.version}</version>
-        <vendor name="${project.organization.name}" url="${project.organization.url}" />
-        <param name="plugin-icon">images/pluginIcon.png</param>
-        <param name="plugin-logo">images/pluginLogo.png</param>
-    </plugin-info>
-
-    <resource type="i18n" name="i18n" location="mergeconflictdetector"/>
-
-    <servlet key="mcd.servlet" name="Merge Conflict Detector Servlet" class="com.vestmark.bitbucket.plugin.MergeConflictDetectorServlet">
-        <url-pattern>/mcd/*</url-pattern>
-    </servlet>
-    
-    <web-item key="mcd.pull-request.nav.conflicts" name="Merge Conflict Detector Pull Request Tab" section="bitbucket.pull-request.nav" weight="20">
-        <label key="mcd.conflicts.tab">Merge Conflicts</label>
-        <link>/plugins/servlet/mcd/${repository.id}/${pullRequest.id}</link>
-        <tooltip key="mcd.conflicts.tab.tooltip"></tooltip>
-        <condition class="com.atlassian.bitbucket.web.conditions.PullRequestInState">
-          <param name="state">OPEN</param>
-        </condition>
-    </web-item>
-
-    <web-resource key="mcd-css" name="Merge Conflict Detector CSS">
-        <resource type="download" name="mergeconflictdetector.css" location="/css/mergeconflictdetector.css" />
-        <context>mergeconflictdetector</context>
-    </web-resource>
-
-    <web-resource key="mcd-spinner" name="Merge Conflict Detector Progress Spinner">
-        <resource type="download" name="mcdtabspinner.js" location="/js/mcdtabspinner.js" />
-        <context>bitbucket.page.pullRequest.view</context>
-        <dependency>com.atlassian.auiplugin:aui-spinner</dependency>
-    </web-resource>
-
-    <client-resource key="mcd.soy" name="Merge Conflict Detector Soy">
-        <directory location="/soy/" />
-        <dependency>com.atlassian.bitbucket.server.bitbucket-web:server-soy-templates</dependency>
-    </client-resource>  
+<atlassian-plugin key="${atlassian.plugin.key}" name="${project.name}" plugins-version="2"> 
+  <plugin-info> 
+    <description>${project.description}</description>  
+    <version>${project.version}</version>  
+    <vendor name="${project.organization.name}" url="${project.organization.url}"/>  
+    <param name="plugin-icon">images/pluginIcon.png</param>  
+    <param name="plugin-logo">images/pluginLogo.png</param> 
+  </plugin-info>  
+  <!-- add our web resources -->  
+  <web-resource key="automergeconflictdetector-resources" name="automergeconflictdetector Web Resources"> 
+    <dependency>com.atlassian.auiplugin:ajs</dependency>  
+    <resource type="download" name="automergeconflictdetector.css" location="/css/automergeconflictdetector.css"/>  
+    <resource type="download" name="automergeconflictdetector.js" location="/js/automergeconflictdetector.js"/>  
+    <resource type="download" name="images/" location="/images"/>  
+    <context>automergeconflictdetector</context> 
+  </web-resource>  
+  <rest name="Merge Conflict Detector Service" i18n-name-key="merge-conflict-detector-service.name" key="merge-conflict-detector-service" path="/mcd" version="1.0"> 
+    <description key="merge-conflict-detector-service.description">The Merge Conflict Detector Service Plugin</description> 
+  </rest>
 </atlassian-plugin>

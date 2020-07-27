@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Vestmark, Inc.
+ * Copyright 2020 Vestmark, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.vestmark.bitbucket.plugin;
+package com.vestmark.bitbucket.rest;
 
 import org.apache.commons.lang3.math.NumberUtils;
 
@@ -106,3 +106,4 @@ public class VersionComparator<T>
     return 0;
   }
 }
+

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Vestmark, Inc.
+ * Copyright 2020 Vestmark, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,10 +12,12 @@
  * the License.
  */
 
-package com.vestmark.bitbucket.plugin;
+package com.vestmark.bitbucket.rest;
 
 import java.util.List;
 import java.util.LinkedList;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 import com.atlassian.bitbucket.pull.PullRequest;
 import com.atlassian.bitbucket.pull.PullRequestRef;
@@ -23,7 +25,7 @@ import com.atlassian.bitbucket.repository.Branch;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.bitbucket.scm.git.command.merge.conflict.GitMergeConflict;
 import com.atlassian.bitbucket.user.ApplicationUser;
-import com.vestmark.bitbucket.plugin.VersionComparator;
+import com.vestmark.bitbucket.rest.VersionComparator;
 
 /**
  * The MergeConflictDetector class stores the pull request instance and exposes details about it
@@ -138,6 +140,18 @@ public class MergeConflictDetector
     return VersionComparator.AS_STRING.compare(toBranch.getDisplayId(), toBranchName) >= 0 ? true : false;
   }
 
+  public List<MergeResultsModel> getMergeResultsModelList() {
+    List<MergeResultsModel> resultsModel = new ArrayList<MergeResultsModel>();
+    for (MergeResult result : mergeResults) {
+      resultsModel.add(new MergeResultsModel(result.getToBranch().getDisplayId(),
+                                             result.getToBranch().getId(),
+                                             result.getMergeConflictsTotal(),
+                                             result.getMessages(),
+                                             result.getFiles()));       
+    }
+    return resultsModel;
+  }
+
   /*
    * The MergeResult inner class must be public to fulfill JavaBeans requirements in order for the
    * accessor methods to be available in Soy.
@@ -166,7 +180,7 @@ public class MergeConflictDetector
     public List<GitMergeConflict> getMergeConflicts()
     {
       return mergeConflicts;
-    }
+   }
 
     public List<String> getMessages()
     {
@@ -176,6 +190,13 @@ public class MergeConflictDetector
     public List<String> getFiles()
     {
       return files;
+    }
+    
+    public int getMergeConflictsTotal() {
+      if (mergeConflicts==null) {
+        return 0;
+      }
+      return mergeConflicts.size();
     }
   }
 }
