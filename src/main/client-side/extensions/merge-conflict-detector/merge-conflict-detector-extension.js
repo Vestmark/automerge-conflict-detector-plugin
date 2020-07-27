@@ -17,12 +17,8 @@ export default ModalExtension.factory((pluginApi, context) => {
                     {
                         text: 'Close',
                         onClick: () => {
-                            console.log('Merge state: ', clean);
-                            if (clean) {
-                              pluginApi.updateAttributes({iconBefore: 'app-access'});
-                            } else {
-                              pluginApi.updateAttributes({iconBefore: 'warning'});
-                            }
+                            var attributes = clean ? {iconBefore: 'app-access'} : {iconBefore: 'warning'};
+                            pluginApi.updateAttributes(attributes);
                             modalApi.closeModal();
                         },
                     },

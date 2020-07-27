@@ -6,11 +6,11 @@
     <artifactId>automergeconflictdetector</artifactId>
     <version>3.0.0</version>
     <packaging>atlassian-plugin</packaging>
-    <name>automergeconflictdetector</name>
-    <description>This is the com.vestmark.bitbucket:automergeconflictdetector plugin for Atlassian Bitbucket Server.</description>
+    <name>AutoMerge Conflict Detector</name>
+    <description>This is the Merge Conflict Detector plugin for Atlassian Bitbucket Server.  It exposes potential automerge conflicts.</description>
     <organization>
-        <name>Example Company</name>
-        <url>http://www.example.com/</url>
+      <name>Vestmark</name>
+      <url>http://www.vestmark.com/</url>
     </organization>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>

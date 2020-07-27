@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Vestmark, Inc.
+ * Copyright 2017 Vestmark, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
  * in compliance with the License. You may obtain a copy of the License at
@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.vestmark.bitbucket.rest;
+package com.vestmark.bitbucket.plugin;
 
 import java.util.List;
 import java.util.LinkedList;
@@ -25,7 +25,7 @@ import com.atlassian.bitbucket.repository.Branch;
 import com.atlassian.bitbucket.repository.Repository;
 import com.atlassian.bitbucket.scm.git.command.merge.conflict.GitMergeConflict;
 import com.atlassian.bitbucket.user.ApplicationUser;
-import com.vestmark.bitbucket.rest.VersionComparator;
+import com.vestmark.bitbucket.plugin.VersionComparator;
 
 /**
  * The MergeConflictDetector class stores the pull request instance and exposes details about it
@@ -141,15 +141,15 @@ public class MergeConflictDetector
   }
 
   public List<MergeResultsModel> getMergeResultsModelList() {
-    List<MergeResultsModel> resultsModel = new ArrayList<MergeResultsModel>();
+    List<MergeResultsModel> resultsModelList = new ArrayList<MergeResultsModel>();
     for (MergeResult result : mergeResults) {
-      resultsModel.add(new MergeResultsModel(result.getToBranch().getDisplayId(),
+      resultsModelList.add(new MergeResultsModel(result.getToBranch().getDisplayId(),
                                              result.getToBranch().getId(),
                                              result.getMergeConflictsTotal(),
                                              result.getMessages(),
                                              result.getFiles()));       
     }
-    return resultsModel;
+    return resultsModelList;
   }
 
   /*
@@ -193,10 +193,7 @@ public class MergeConflictDetector
     }
     
     public int getMergeConflictsTotal() {
-      if (mergeConflicts==null) {
-        return 0;
-      }
-      return mergeConflicts.size();
+      return (mergeConflicts==null) ? 0 : mergeConflicts.size();      
     }
   }
 }
