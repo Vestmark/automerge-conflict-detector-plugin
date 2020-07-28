@@ -7,6 +7,7 @@ import 'regenerator-runtime/runtime'
 export default ModalExtension.factory((pluginApi, context) => {
     return {
         hidden: false,
+        iconBefore: 'editor/help',
         label: 'Merge Conflict Detector',
         onAction: modalApi => {
             modalApi.onMount(container => {
@@ -18,7 +19,8 @@ export default ModalExtension.factory((pluginApi, context) => {
                         text: 'Close',
                         onClick: () => {
                             var attributes = clean ? {iconBefore: 'app-access'} : {iconBefore: 'warning'};
-                            pluginApi.updateAttributes(attributes);
+                            pluginApi.updateAttributes({iconBefore: null});
+                            setTimeout(() => { pluginApi.updateAttributes(attributes); }, 100);
                             modalApi.closeModal();
                         },
                     },
@@ -26,7 +28,7 @@ export default ModalExtension.factory((pluginApi, context) => {
 
                 var projectHref = context.project.links.self[0].href;
                 var baseUrl = projectHref.split(/\/projects\//)[0];
-                var mcdEndpoint = baseUrl + '/rest/mcd/1.0/conflicts/' + context.repository.id + '/' + context.pullRequest.id;
+                var mcdEndpoint = baseUrl + '/rest/mcd/1.0/merge-conflicts/' + context.repository.id + '/' + context.pullRequest.id;
                 container.innerHTML = '<div><p>Loading results...</p><aui-spinner size="large"></aui-spinner></div>';
 
                 setHtmlTable();

@@ -18,6 +18,7 @@ import javax.xml.bind.annotation.*;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Collections;
 
 @XmlRootElement(name = "mergeresultsmodel")
 @XmlAccessorType(XmlAccessType.PROPERTY)
@@ -54,11 +55,11 @@ public class MergeResultsModel {
     }
 
     public List<String> getMergeMessages() {
-      return (mergeMessages == null) ? (new ArrayList<>(Arrays.asList("None"))) : mergeMessages;
+      return (mergeMessages == null) ? Collections.singletonList("None") : mergeMessages;
     }
 
     public List<String> getMergeFiles() {
-      return (mergeFiles == null) ? (new ArrayList<>(Arrays.asList("None"))) : mergeFiles;
+      return (mergeFiles == null) ? Collections.singletonList("None") : mergeFiles;
     }
 
 }

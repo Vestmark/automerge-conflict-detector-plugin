@@ -20,6 +20,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.ArrayList;
+import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -49,19 +50,24 @@ import com.google.common.collect.ImmutableMap;
 
 import com.atlassian.plugins.rest.common.security.AnonymousAllowed;
 
-import javax.ws.rs.*;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.annotation.PostConstruct;
 
 /**
 * A resource of message.
 */
-@Path("/conflicts")
+@Path("/merge-conflicts")
 public class MergeConflictDetectorService {
 
     private static final long serialVersionUID = 1L;
     private static final String AUTO_MERGE_FAIL = "Automatic merge failure";
- 
+    private static String HOST_URL;
+
     private final ApplicationPropertiesService applicationPropertiesService; 
     private final AuthenticationContext authenticationContext;
     private final GitExtendedCommandFactory extendedCmdFactory;
@@ -87,33 +93,41 @@ public class MergeConflictDetectorService {
       branchComparator = new VersionComparator<Branch>(Branch::getDisplayId);
     }
 
+    @PostConstruct
+    private void postConstruct() {
+      HOST_URL = applicationPropertiesService.getBaseUrl().toString();
+    }
+
     @GET
     @AnonymousAllowed
     @Produces({MediaType.APPLICATION_JSON})
     @Path("/{repoIdStr}/{pullRequestIdStr}")
-    public Response getMergeResults(@PathParam("repoIdStr") String repoIdStr, @PathParam("pullRequestIdStr") String pullRequestIdStr)
+    public Response getMergeResults(@PathParam("repoIdStr") String repoIdParam, @PathParam("pullRequestIdStr") String pullRequestIdParam)
     {
-      String hostUrl = applicationPropertiesService.getBaseUrl().toString();
-      int repoId = Integer.parseInt(repoIdStr);
-      long pullRequestId = Long.parseLong(pullRequestIdStr);
+      int repoId = Integer.parseInt(repoIdParam);
+      long pullRequestId = Long.parseLong(pullRequestIdParam);
       MergeConflictDetector mcd = new MergeConflictDetector(authenticationContext.getCurrentUser(), 
-        pullRequestService.getById(repoId, pullRequestId), hostUrl);
+        pullRequestService.getById(repoId, pullRequestId), HOST_URL);
       BranchClassifier bc = modelService.getModel(mcd.getToRepo()).getClassifier();
       BranchType toBranchType = bc.getType(mcd.getToBranch());
       // If the target is not master and is a release branch, find target branch and upstream releases (if any).
       if (!mcd.getToBranchId().equals("refs/heads/master") && toBranchType != null && toBranchType.getId().equals("RELEASE") ) {
-        Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
-        branches.stream()
+        //Non parallel way commented out below
+        //Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
+        //branches.stream()
+        Iterable<Branch> branches = bc.getAllBranchesByType(toBranchType);
+        StreamSupport.stream(branches.spliterator(), true)
               .filter(b -> mcd.isRelated(b))
               .filter(b -> mcd.isUpstreamBranch(b))
               .sorted(branchComparator)
-              .forEachOrdered(b -> dryRunMerge(mcd, b));
+        //     .forEachOrdered(b -> dryRunMerge(mcd, b));
+              .forEach(b -> dryRunMerge(mcd, b));
       }
       dryRunMerge(mcd, refService.getDefaultBranch(mcd.getToRepo())); // Always merge to default.
       checkForAutoMergeFailure(mcd);
       return Response.ok(mcd.getMergeResultsModelList()).build();
     }
-    
+
     private void checkForAutoMergeFailure(MergeConflictDetector mcd)
     {
       try {

@@ -1,7 +1,8 @@
 # Automerge Conflict Detector Bitbucket Plugin
 
-This plugin adds a tab to the pull request page where conflicts arising from automerge are exposed. 
-Dry-run merges will be performed on all downstream release branches including the default branch.
+This plugin adds a button on the pull request page where conflicts arising from automerge are exposed
+in a modal pop-out window.  Dry-run merges will be performed on all downstream release branches
+including the default branch.
 
 Requires Bitbucket Server 7.X.X
 
