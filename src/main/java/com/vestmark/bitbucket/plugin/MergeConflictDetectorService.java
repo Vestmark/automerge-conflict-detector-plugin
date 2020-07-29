@@ -19,8 +19,6 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.ArrayList;
-import java.util.stream.StreamSupport;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.CollectionUtils;
@@ -112,18 +110,16 @@ public class MergeConflictDetectorService {
       BranchType toBranchType = bc.getType(mcd.getToBranch());
       // If the target is not master and is a release branch, find target branch and upstream releases (if any).
       if (!mcd.getToBranchId().equals("refs/heads/master") && toBranchType != null && toBranchType.getId().equals("RELEASE") ) {
-        //Non parallel way commented out below
-        //Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
-        //branches.stream()
-        Iterable<Branch> branches = bc.getAllBranchesByType(toBranchType);
-        StreamSupport.stream(branches.spliterator(), true)
+        Page<Branch> branches = bc.getBranchesByType(toBranchType, new PageRequestImpl(0,PageRequestImpl.MAX_PAGE_LIMIT/2));
+        branches.stream()
+              .parallel()
               .filter(b -> mcd.isRelated(b))
               .filter(b -> mcd.isUpstreamBranch(b))
               .sorted(branchComparator)
-        //     .forEachOrdered(b -> dryRunMerge(mcd, b));
-              .forEach(b -> dryRunMerge(mcd, b));
+              .forEach(b -> mcd.addResult(dryRunMerge(mcd, b)));
       }
-      dryRunMerge(mcd, refService.getDefaultBranch(mcd.getToRepo())); // Always merge to default.
+      mcd.sortMergeResults();
+      mcd.addResult(dryRunMerge(mcd, refService.getDefaultBranch(mcd.getToRepo()))); // Always merge to default.
       checkForAutoMergeFailure(mcd);
       return Response.ok(mcd.getMergeResultsModelList()).build();
     }
@@ -162,7 +158,7 @@ public class MergeConflictDetectorService {
       }
     }
 
-    public void dryRunMerge(MergeConflictDetector mcd, Branch toBranch)
+    private MergeResult dryRunMerge(MergeConflictDetector mcd, Branch toBranch)
     {
       List<String> files = null;
       List<GitMergeConflict> mergeConflicts = null;
@@ -181,31 +177,29 @@ public class MergeConflictDetectorService {
         if (result != null) {
           message.add("Merge committed! Commit ID: " + result.getLatestCommit());
         }
-      } catch (Exception e) {
-        if (e instanceof MergeException) {
-          files = new LinkedList<String>();
-          mergeConflicts = new LinkedList<GitMergeConflict>();
-          // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
-          // The (GitMergeException) cast below causes the plugin to crash because of it.
-          // Adding a CommandFailedException catch block did not work.
-          // Checking the type of the Exception obj prior to the cast using instanceof did not work.
-          // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
-          try {
-            for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
-              files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
-              message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
-                                            + mergeConflict.getTheirChange());
-              mergeConflicts.add(mergeConflict);
-            }
-          } catch (Exception f) {
-            message.add(e.getMessage());
+      } catch (MergeException e) {
+        files = new LinkedList<String>();
+        mergeConflicts = new LinkedList<GitMergeConflict>();
+        // When a merge cannot be completed automatically, a CommandFailedException is being thrown and caught in this MergeException block by mistake.
+        // The (GitMergeException) cast below causes the plugin to crash because of it.
+        // Adding a CommandFailedException catch block did not work.
+        // Checking the type of the Exception obj prior to the cast using instanceof did not work.
+        // Encasing the cast inside its own try/catch was the only way I could find to keep the plugin from crashing.
+        try {
+          for (GitMergeConflict mergeConflict : ((GitMergeException)e.getCause()).getConflicts()) {
+            files.add(mergeConflict.getMessage().replaceFirst("Merge conflict in ", ""));
+            message.add("Source change: " + mergeConflict.getOurChange() + " Target change: " 
+                                          + mergeConflict.getTheirChange());
+            mergeConflicts.add(mergeConflict);
           }
-        } else {
-          // Non Merge Exception
+        } catch (Exception f) {
           message.add(e.getMessage());
         }
+      } catch (Exception e) {
+        // Non Merge Exception
+        message.add(e.getMessage());
       }
-      mcd.addResult(toBranch, mergeConflicts, message, files);
+      return new MergeResult(toBranch, mergeConflicts, message, files);
     }
 }
 
