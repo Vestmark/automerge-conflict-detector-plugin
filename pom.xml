@@ -1,38 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<!--
-    Copyright 2017 Vestmark, Inc.
-    
-    Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
-    in compliance with the License. You may obtain a copy of the License at
-    
-        http://www.apache.org/licenses/LICENSE-2.0
-    
-    Unless required by applicable law or agreed to in writing, software distributed under the License
-    is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express 
-    or implied. See the License for the specific language governing permissions and limitations under
-    the License.
--->
-
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vestmark.bitbucket</groupId>
     <artifactId>automergeconflictdetector</artifactId>
-    <version>2.0.6</version>
-    <organization>
-        <name>Vestmark</name>
-        <url>http://www.vestmark.com/</url>
-    </organization>
-    <name>AutoMerge Conflict Detector</name>
-    <description>
-        This is the Merge Conflict Detector plugin for Atlassian Bitbucket Server.
-        It exposes potential automerge conflicts.
-    </description>
+    <version>3.0.0</version>
     <packaging>atlassian-plugin</packaging>
-
+    <name>AutoMerge Conflict Detector</name>
+    <description>This is the Merge Conflict Detector plugin for Atlassian Bitbucket Server.  It exposes potential automerge conflicts.</description>
+    <organization>
+      <name>Vestmark</name>
+      <url>http://www.vestmark.com/</url>
+    </organization>
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <amps.version>8.0.2</amps.version>
+        <bitbucket.version>7.4.0</bitbucket.version>
+        <bitbucket.data.version>${bitbucket.version}</bitbucket.data.version>
+        <!-- This property ensures consistency between the key in atlassian-plugin.xml and the OSGi bundle's key. -->
+        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
+        <atlassian.spring.scanner.version>2.1.7</atlassian.spring.scanner.version>
+        <javax.inject.version>1</javax.inject.version>
+        <jsr311.version>1.1.1</jsr311.version>
+        <plugin.testrunner.version>2.0.1</plugin.testrunner.version>
+        <spring.version>5.0.10.RELEASE</spring.version>
+        <atlassian.spring.scanner.version>2.1.9</atlassian.spring.scanner.version>
+        <atlassian.plugins.version>5.2.1</atlassian.plugins.version>
+        <webfragments.version>5.1.0</webfragments.version>
+        <frontend.maven.plugin.version>1.6</frontend.maven.plugin.version>
+        <frontend.maven.plugin.install.directory>${project.build.directory}</frontend.maven.plugin.install.directory>
+        <nodeVersion>v12.13.0</nodeVersion>
+        <fe.cmd.install>install --no-progress</fe.cmd.install>
+        <fe.cmd.build>build:prod</fe.cmd.build>
+        <fe.cmd.build.dev>build:dev</fe.cmd.build.dev>
+        <frontend.working.directory>src/main/client-side</frontend.working.directory>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -44,8 +48,31 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
     <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugin</groupId>
+            <artifactId>atlassian-spring-scanner-annotation</artifactId>
+            <version>${atlassian.spring.scanner.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-api</artifactId>
+            <version>${atlassian.plugins.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-webfragment-api</artifactId>
+            <version>${webfragments.version}</version>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>com.atlassian.bitbucket.server</groupId>
             <artifactId>bitbucket-branch-api</artifactId>
@@ -68,19 +95,24 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.bitbucket.server</groupId>
-            <artifactId>bitbucket-page-objects</artifactId>
+          <groupId>com.atlassian.bitbucket.server</groupId>
+          <artifactId>bitbucket-page-objects</artifactId>
+          <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.sal</groupId>
+            <artifactId>sal-api</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.soy</groupId>
-            <artifactId>soy-template-renderer-api</artifactId>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>com.atlassian.plugin</groupId>
-            <artifactId>atlassian-spring-scanner-annotation</artifactId>
-            <version>${atlassian.spring.scanner.version}</version>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+            <version>${javax.inject.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -88,8 +120,64 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>jsr311-api</artifactId>
+            <version>${jsr311.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins</groupId>
+            <artifactId>atlassian-plugins-osgi-testrunner</artifactId>
+            <version>${plugin.testrunner.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <version>2.4</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>javax.xml.bind</groupId>
+            <artifactId>jaxb-api</artifactId>
+            <version>2.3.1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.atlassian.plugins.rest</groupId>
+            <artifactId>atlassian-rest-common</artifactId>
+            <version>1.0.2</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.wink</groupId>
+            <artifactId>wink-client</artifactId>
+            <version>1.4</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+            <version>1.8.5</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+          <groupId>com.fasterxml.jackson.core</groupId>
+          <artifactId>jackson-databind</artifactId>
+          <version>2.9.8</version>
+        </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -104,11 +192,71 @@
                             <instanceId>bitbucket</instanceId>
                             <version>${bitbucket.version}</version>
                             <dataVersion>${bitbucket.data.version}</dataVersion>
+                            <pluginArtifacts>
+                                <!-- See https://bitbucket.org/atlassianlabs/quickreload -->
+                                <pluginArtifact>
+                                    <groupId>com.atlassian.labs.plugins</groupId>
+                                    <artifactId>quickreload</artifactId>
+                                    <version>${quick.reload.version}</version>
+                                </pluginArtifact>
+                            </pluginArtifacts>
                         </product>
                     </products>
                     <instructions>
                         <Atlassian-Plugin-Key>${atlassian.plugin.key}</Atlassian-Plugin-Key>
-                        <Import-Package>*</Import-Package>
+                        <Atlassian-Scan-Folders>META-INF/plugin-descriptors</Atlassian-Scan-Folders>
+                        <!-- Add package to export here -->
+                        <Export-Package>com.vestmark.bitbucket.api,</Export-Package>
+                        <!-- Add package import here -->
+                        <Import-Package>org.springframework.osgi.*;resolution:="optional", org.eclipse.gemini.blueprint.*;resolution:="optional", *</Import-Package>
+                        <!-- Ensure plugin is Spring powered -->
+                        <Spring-Context>*</Spring-Context>
+                    </instructions>
+                    <compressJs>false</compressJs>
+                    <compressCss>false</compressCss>
+                    <enableQuickReload>true</enableQuickReload>
+                    <enablePde>false</enablePde>
+                    <quickReloadVersion>${quick.reload.version}</quickReloadVersion>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>bitbucket-maven-plugin</artifactId>
+                <version>${amps.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <products>
+                        <product>
+                            <id>bitbucket</id>
+                            <instanceId>bitbucket</instanceId>
+                            <version>${bitbucket.version}</version>
+                            <dataVersion>${bitbucket.data.version}</dataVersion>
+                            <pluginArtifacts>
+                                <pluginArtifact>
+                                    <groupId>com.atlassian.labs.plugins</groupId>
+                                    <artifactId>quickreload</artifactId>
+                                    <version>${quick.reload.version}</version>
+                                </pluginArtifact>
+                            </pluginArtifacts>
+                        </product>
+                    </products>
+                    <enablePde>false</enablePde>
+                    <enableQuickReload>true</enableQuickReload>
+                    <quickReloadVersion>${quick.reload.version}</quickReloadVersion>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.atlassian.maven.plugins</groupId>
+                <artifactId>bitbucket-maven-plugin</artifactId>
+                <version>${amps.version}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <compressJs>false</compressJs>
+                    <compressCss>false</compressCss>
+                    <enableQuickReload>true</enableQuickReload>
+                    <instructions>
+                        <Atlassian-Plugin-Key>${atlassian.plugin.key}</Atlassian-Plugin-Key>
+                        <Atlassian-Scan-Folders>META-INF/plugin-descriptors</Atlassian-Scan-Folders>
                         <Spring-Context>*</Spring-Context>
                     </instructions>
                 </configuration>
@@ -135,16 +283,73 @@
                     <verbose>false</verbose>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>${frontend.maven.plugin.version}</version>
+                <configuration>
+                    <nodeVersion>${nodeVersion}</nodeVersion>
+                    <installDirectory>${frontend.maven.plugin.install.directory}</installDirectory>
+                    <workingDirectory>${basedir}</workingDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install-node-and-npm</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>install-prod-dependencies</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>${fe.cmd.install}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>compile-the-ui</id>
+                        <phase>process-resources</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run ${fe.cmd.build}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>lint</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run lint</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>run-tests</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>run test</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-
-    <properties>
-        <bitbucket.version>5.6.0</bitbucket.version>
-        <bitbucket.data.version>5.6.0</bitbucket.data.version>
-        <amps.version>6.3.13</amps.version>
-        <atlassian.plugin.key>${project.groupId}.${project.artifactId}</atlassian.plugin.key>
-        <atlassian.spring.scanner.version>2.1.3</atlassian.spring.scanner.version>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
-    </properties>
+    <profiles>
+        <profile>
+            <id>watch-mode</id>
+            <properties>
+                <fe.cmd.build>${fe.cmd.build.dev}</fe.cmd.build>
+            </properties>
+        </profile>
+    </profiles>
 </project>
