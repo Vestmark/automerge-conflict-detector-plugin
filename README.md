@@ -6,8 +6,16 @@ including the default branch.
 
 Requires Bitbucket Server 7.X.X
 
+Bitbucket Version Compatibility :
+
+v3.0.0 is compatible with Bitbucket Versions 7.0.0 - 7.10.x
+
+v4.0.0 is compatible with Bitbucket Versions 7.11.0 and up.
+
+
+
 ## License
-    Copyright 2017 Vestmark, Inc.
+    Copyright 2021 Vestmark, Inc.
 
     Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except 
     in compliance with the License. You may obtain a copy of the License at
