@@ -26,8 +26,8 @@ export default ModalExtension.factory((pluginApi, context) => {
                     },
                 ]);
 
-                var projectHref = context.project.links.self[0].href;
-                var baseUrl = projectHref.split(/\/projects\//)[0];
+                var projectHref = window.location.href;
+                var baseUrl = projectHref.split("\/projects\/")[0];
                 var mcdEndpoint = baseUrl + '/rest/mcd/1.0/merge-conflicts/' + context.repository.id + '/' + context.pullRequest.id;
                 container.innerHTML = '<div><p>Loading results...</p><aui-spinner size="large"></aui-spinner></div>';
 
