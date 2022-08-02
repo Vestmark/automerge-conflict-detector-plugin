@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.vestmark.bitbucket</groupId>
     <artifactId>automergeconflictdetector</artifactId>
-    <version>4.0.0</version>
+    <version>4.0.1</version>
     <packaging>atlassian-plugin</packaging>
     <name>AutoMerge Conflict Detector</name>
     <description>This is the Merge Conflict Detector plugin for Atlassian Bitbucket Server.  It exposes potential automerge conflicts.</description>
@@ -25,7 +25,7 @@
         <javax.inject.version>1</javax.inject.version>
         <jsr311.version>1.1.1</jsr311.version>
         <plugin.testrunner.version>2.0.1</plugin.testrunner.version>
-        <spring.version>5.0.10.RELEASE</spring.version>
+        <spring.version>5.3.18</spring.version>
         <atlassian.spring.scanner.version>2.1.9</atlassian.spring.scanner.version>
         <atlassian.plugins.version>5.2.1</atlassian.plugins.version>
         <webfragments.version>5.1.0</webfragments.version>
